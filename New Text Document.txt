@@ -1,0 +1,165 @@
+import SpriteKit
+
+import GameplayKit
+
+
+
+class GameScene: SKScene, SKPhysicsContactDelegate {
+
+    
+
+    private var vase: SKSpriteNode?
+
+    let vaseHit = SKAction.playSoundFileNamed("", waitForCompletion: false)
+
+    let missHit = SKAction.playSoundFileNamed("", waitForCompletion: false)
+
+    var targetGenerator = Timer()
+
+    private var targetObj: SKSpriteNode?
+
+    var label: SKLabelNode?
+
+    var FlowerCount = 0
+
+    
+
+    override func didMove(to view: SKView){
+
+        physicsWorld.contactDelegate = self
+
+        vase = (self.childNode(withName: "vase") as! SKSpriteNode)
+
+        targetGenerator = Timer.scheduledTimer(timeInterval: 3, target: self, selector:#selector(leaveRandom) , userInfo: nil, repeats: true)
+
+        
+
+        label = SKLabelNode(text: "0 Collect")
+
+        label!.fontName = "AvenirNext-Bold"
+
+        label!.fontSize = 25
+
+        label!.fontColor = UIColor.black
+
+        label!.position = CGPoint(x: 130, y: 50)
+
+        self.addChild(label!)
+
+    }
+
+    func didBegin(_ contact: SKPhysicsContact){
+
+        run(vaseHit)
+
+    }
+
+    func moveHere(atPoint pos : CGPoint){
+
+        vase?.position.x = pos.x
+
+    }
+
+    
+
+    @objc func leaveRandom(){
+
+        let randomX = Int.random(in: 50...Int(self.size.width)-50)
+
+        
+
+        targetObj = SKSpriteNode(imageNamed:"icq.png")
+
+        targetObj?.position = CGPoint(x: randomX, y: Int(self.size.height)-100)
+
+        print(targetObj?.position as Any)
+
+        
+
+        targetObj?.physicsBody = SKPhysicsBody(circleOfRadius: CGFloat(Float(8)))
+
+        
+
+        if let physics = targetObj!.physicsBody{
+
+            physics.affectedByGravity = true
+
+            physics.allowsRotation = true
+
+            physics.isDynamic = true;
+
+            physics.linearDamping = 0.5
+
+            physics.angularDamping = 0.5
+
+            physics.restitution = 0.8
+
+            physics.categoryBitMask = 1
+
+            physics.contactTestBitMask = 1
+
+            physics.collisionBitMask = 1
+
+        }
+
+        
+
+        self.addChild(targetObj!)
+
+    }
+
+    
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?){
+
+        for t in touches { self.moveHere(atPoint: t.location(in: self)) }
+
+    }
+
+    
+
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?){
+
+        for t in touches { self.moveHere(atPoint: t.location(in: self)) }
+
+    }
+
+    
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?){
+
+        for t in touches { self.moveHere(atPoint: t.location(in: self)) }
+
+    }
+
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?){
+
+        for t in touches { self.moveHere(atPoint: t.location(in: self)) }
+
+    }
+
+    
+
+    override func update(_ currentTime: TimeInterval) {
+
+        for child in children{
+
+            if child.frame.maxY < 0 {
+
+                if !frame.intersects(child.frame){
+
+                    child.removeFromParent()
+
+                    run(missHit)
+
+                }
+
+            }
+
+        }
+
+    }
+
+    
+
+}
